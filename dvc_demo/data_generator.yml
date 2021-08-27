@@ -8,6 +8,6 @@ dataset:
   n_classes: 2
   n_clusters_per_class: 2
   class_sep: 0.8
-  random_state: 42
+  random_state: 36
   shift: 10.
   scale: 3.
