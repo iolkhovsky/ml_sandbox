@@ -4,78 +4,72 @@ stages:
     cmd: python3 preprocess_data.py
     deps:
     - path: data/raw_data.csv
-      md5: 64bc2cc8d1498e3028e87ffe5231c8fc
-      size: 188672
+      md5: f7bdbdd984299ea04c08caaaab856e87
+      size: 188693
     - path: preprocess_data.py
       md5: 239d5c7dbd3d1ef01051d2512874fcd3
       size: 1912
     params:
       params.yaml:
-        preprocessing.data: data/raw_data.csv
-        preprocessing.output: data
         preprocessing.random_state: 42
         preprocessing.test_share: 0.2
     outs:
     - path: data/test.csv
-      md5: b469f471205ef601f7070ec39be91af1
-      size: 8132
+      md5: 2f65470908677b2f3d29411e71de53d8
+      size: 8158
     - path: data/train.csv
-      md5: eebed44fc61d6fce0f8ad40fc91df1d4
-      size: 32495
+      md5: 5459163fad07aac32f582c775d1aa076
+      size: 32528
   training:
     cmd: python3 train.py
     deps:
     - path: data/train.csv
-      md5: eebed44fc61d6fce0f8ad40fc91df1d4
-      size: 32495
+      md5: 5459163fad07aac32f582c775d1aa076
+      size: 32528
     - path: train.py
       md5: ad1a68111065deda56a49791c559515e
       size: 2595
     params:
       params.yaml:
-        training.dataset: data/train.csv
         training.model.method: naive_bayes
         training.model.parameters: None
         training.model.type: GaussianNB
-        training.output: trained_model
         training.preprocessor.type: StandardScaler
     outs:
     - path: trained_model/model.pickle
-      md5: 2c64cfdf3d524807d8673c8f35370ac7
+      md5: 21bf4a7a0616a5cb3081cdd18c3eddd5
       size: 591
     - path: trained_model/preprocessor.pickle
-      md5: 24b328c5c35b4983f605102aa28ca02e
+      md5: 8244e271474eb9d568f315a541774acd
       size: 489
     - path: trained_model/train.png
-      md5: d7709c28b55e73d02c9b05fa955b87c9
-      size: 468554
+      md5: 33abb142af32a5ec519a562af805ac35
+      size: 482912
     - path: trained_model/train_report.yml
-      md5: 4e95b75561e20fa727b64d8084fcc1a0
-      size: 365
+      md5: 064604748c9e4df2bc92fe781102d0f0
+      size: 364
   testing:
     cmd: python3 test.py
     deps:
     - path: data/test.csv
-      md5: b469f471205ef601f7070ec39be91af1
-      size: 8132
+      md5: 2f65470908677b2f3d29411e71de53d8
+      size: 8158
     - path: test.py
       md5: 8878e347b0a50627c4d5f29a0d323171
       size: 1887
     - path: trained_model/model.pickle
-      md5: 2c64cfdf3d524807d8673c8f35370ac7
+      md5: 21bf4a7a0616a5cb3081cdd18c3eddd5
       size: 591
     - path: trained_model/preprocessor.pickle
-      md5: 24b328c5c35b4983f605102aa28ca02e
+      md5: 8244e271474eb9d568f315a541774acd
       size: 489
     params:
       params.yaml:
-        testing.dataset: data/test.csv
         testing.model: trained_model
-        testing.output: test_results
     outs:
     - path: test_results/test.png
-      md5: 588ac43fd3cc4638636a857bf7e64c0e
-      size: 235062
+      md5: 51daebcaa7e796827604c9e5e9d94c79
+      size: 236341
     - path: test_results/test_report.yml
-      md5: 0467c5a9cfe93da8c9407688d1d61eaf
-      size: 231
+      md5: c67d56b6bd3a51b070b63af5f64d670f
+      size: 216
