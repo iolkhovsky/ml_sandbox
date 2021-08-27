@@ -1,3 +1,0 @@
-dataset: data/test.csv
-model: trained_model
-output: test_results

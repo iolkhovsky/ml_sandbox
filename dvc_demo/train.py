@@ -16,13 +16,13 @@ from utils import read_yaml, save_object, visualize_classification_2d, write_yam
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Training script")
-    parser.add_argument("--config", type=str, default="training.yml",
-                        help="Absolute path to the training pipeline")
+    parser.add_argument("--config", type=str, default="params.yaml",
+                        help="Absolute path to the configuration file (params.yaml)")
     return parser.parse_args()
 
 
 def run_training(args):
-    config = read_yaml(args.config)
+    config = read_yaml(args.config)["training"]
     report = {
         "config": config
     }

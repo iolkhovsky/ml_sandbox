@@ -10,13 +10,13 @@ from utils import read_yaml, read_object, visualize_classification_2d, write_yam
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Testing script")
-    parser.add_argument("--config", type=str, default="testing.yml",
-                        help="Absolute path to the testing config")
+    parser.add_argument("--config", type=str, default="params.yaml",
+                        help="Absolute path to the configuration file (params.yaml)")
     return parser.parse_args()
 
 
 def run_testing(args):
-    config = read_yaml(args.config)
+    config = read_yaml(args.config)["testing"]
     report = {
         "config": config
     }

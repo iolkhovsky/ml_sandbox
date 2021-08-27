@@ -3,4 +3,16 @@ preprocessing:
   output: data
   test_share: 0.2
   random_state: 42
-
+training:
+  dataset: data/train.csv
+  preprocessor:
+    type: StandardScaler
+  model:
+    method: naive_bayes
+    type: GaussianNB
+    parameters: None
+  output: trained_model
+testing:
+  dataset: data/test.csv
+  model: trained_model
+  output: test_results

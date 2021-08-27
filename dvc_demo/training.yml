@@ -1,8 +1,0 @@
-dataset: data/train.csv
-preprocessor:
-  type: StandardScaler
-model:
-  method: naive_bayes
-  type: GaussianNB
-  parameters: None
-output: trained_model
