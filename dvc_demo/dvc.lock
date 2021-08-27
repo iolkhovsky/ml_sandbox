@@ -52,3 +52,30 @@ stages:
     - path: trained_model/train_report.yml
       md5: 4e95b75561e20fa727b64d8084fcc1a0
       size: 365
+  testing:
+    cmd: python3 test.py
+    deps:
+    - path: data/test.csv
+      md5: b469f471205ef601f7070ec39be91af1
+      size: 8132
+    - path: test.py
+      md5: 8878e347b0a50627c4d5f29a0d323171
+      size: 1887
+    - path: trained_model/model.pickle
+      md5: 2c64cfdf3d524807d8673c8f35370ac7
+      size: 591
+    - path: trained_model/preprocessor.pickle
+      md5: 24b328c5c35b4983f605102aa28ca02e
+      size: 489
+    params:
+      params.yaml:
+        testing.dataset: data/test.csv
+        testing.model: trained_model
+        testing.output: test_results
+    outs:
+    - path: test_results/test.png
+      md5: 588ac43fd3cc4638636a857bf7e64c0e
+      size: 235062
+    - path: test_results/test_report.yml
+      md5: 0467c5a9cfe93da8c9407688d1d61eaf
+      size: 231
