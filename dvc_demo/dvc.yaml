@@ -5,8 +5,6 @@ stages:
     - data/raw_data.csv
     - preprocess_data.py
     params:
-    - preprocessing.data
-    - preprocessing.output
     - preprocessing.random_state
     - preprocessing.test_share
     outs:
@@ -18,11 +16,9 @@ stages:
     - data/train.csv
     - train.py
     params:
-    - training.dataset
     - training.model.method
     - training.model.parameters
     - training.model.type
-    - training.output
     - training.preprocessor.type
     outs:
     - trained_model/model.pickle
@@ -37,9 +33,7 @@ stages:
     - trained_model/model.pickle
     - trained_model/preprocessor.pickle
     params:
-    - testing.dataset
     - testing.model
-    - testing.output
     outs:
     - test_results/test.png
     - test_results/test_report.yml
