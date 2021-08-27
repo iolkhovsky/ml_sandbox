@@ -1,0 +1,13 @@
+output: data
+dataset:
+  n_samples: 100
+  n_features: 10
+  n_informative: 2
+  n_redundant: 6
+  n_repeated: 2
+  n_classes: 2
+  n_clusters_per_class: 2
+  class_sep: 0.8
+  random_state: 42
+  shift: 10.
+  scale: 3.
