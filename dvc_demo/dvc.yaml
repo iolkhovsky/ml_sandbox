@@ -12,3 +12,20 @@ stages:
     outs:
     - data/test.csv
     - data/train.csv
+  training:
+    cmd: python3 train.py
+    deps:
+    - data/train.csv
+    - train.py
+    params:
+    - training.dataset
+    - training.model.method
+    - training.model.parameters
+    - training.model.type
+    - training.output
+    - training.preprocessor.type
+    outs:
+    - trained_model/model.pickle
+    - trained_model/preprocessor.pickle
+    - trained_model/train.png
+    - trained_model/train_report.yml
