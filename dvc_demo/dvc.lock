@@ -1,0 +1,24 @@
+schema: '2.0'
+stages:
+  preprocessing:
+    cmd: python3 preprocess_data.py
+    deps:
+    - path: data/raw_data.csv
+      md5: 64bc2cc8d1498e3028e87ffe5231c8fc
+      size: 188672
+    - path: preprocess_data.py
+      md5: 239d5c7dbd3d1ef01051d2512874fcd3
+      size: 1912
+    params:
+      params.yaml:
+        preprocessing.data: data/raw_data.csv
+        preprocessing.output: data
+        preprocessing.random_state: 42
+        preprocessing.test_share: 0.2
+    outs:
+    - path: data/test.csv
+      md5: b469f471205ef601f7070ec39be91af1
+      size: 8132
+    - path: data/train.csv
+      md5: eebed44fc61d6fce0f8ad40fc91df1d4
+      size: 32495

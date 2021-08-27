@@ -1,0 +1,14 @@
+stages:
+  preprocessing:
+    cmd: python3 preprocess_data.py
+    deps:
+    - data/raw_data.csv
+    - preprocess_data.py
+    params:
+    - preprocessing.data
+    - preprocessing.output
+    - preprocessing.random_state
+    - preprocessing.test_share
+    outs:
+    - data/test.csv
+    - data/train.csv
