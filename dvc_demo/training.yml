@@ -1,6 +1,4 @@
-dataset:
-  train: data/train.csv
-  test: data/test.csv
+dataset: data/train.csv
 preprocessor:
   type: StandardScaler
 model:
