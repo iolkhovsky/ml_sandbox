@@ -7,7 +7,7 @@ CMAP_LIGHT = ListedColormap(['lightyellow', 'cyan'])
 CMAP_BOLD = ['orange', 'darkblue']
 
 
-def visualize_classification_2d(x, y, model, grid_step=None, feature_names=None):
+def visualize_classification_2d(x, y, model, grid_step=None, feature_names=None, hint=""):
     if grid_step is None:
         grid_step = 0.02
     if feature_names is None:
@@ -27,7 +27,7 @@ def visualize_classification_2d(x, y, model, grid_step=None, feature_names=None)
                     palette=CMAP_BOLD, alpha=1.0, edgecolor="black")
     plt.xlim(xx.min(), xx.max())
     plt.ylim(yy.min(), yy.max())
-    plt.title(f"Binary classification. Model: {model}")
+    plt.title(f"Binary classification. Model: {model}. {hint}")
     plt.xlabel(feature_names[0])
     plt.ylabel(feature_names[1])
     plt.show()
