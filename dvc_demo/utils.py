@@ -1,5 +1,6 @@
 from os.path import dirname, isfile, isdir
 from os import makedirs
+import pickle
 import yaml
 
 
@@ -16,3 +17,14 @@ def write_yaml(path, data):
         makedirs(parent_folder)
     with open(path, "w") as f:
         yaml.dump(data, f, Dumper=yaml.SafeDumper)
+
+
+def save_object(obj, path):
+    with open(path, "wb") as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+
+def read_object(path):
+    with open(path, "rb") as f:
+        obj = pickle.load(f)
+        return obj
