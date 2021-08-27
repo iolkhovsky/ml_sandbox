@@ -12,7 +12,7 @@ import sklearn.svm
 import sklearn.neural_network
 from time import time
 
-from utils import read_yaml, write_yaml, save_object
+from utils import read_yaml, save_object, visualize_classification_2d, write_yaml
 
 
 def parse_args():
@@ -68,6 +68,11 @@ def run_training(args):
     save_object(model, join(config["output"], "model.pickle"))
     save_object(preprocessor, join(config["output"], "preprocessor.pickle"))
     write_yaml(join(config["output"], "report.yml"), report)
+    feature_names = train_df.columns[:-1].values.tolist()
+    visualize_classification_2d(x_train_norm, y_train.flatten(), model, path=join(config["output"], "train.png"),
+                                hint="Train subset", feature_names=feature_names)
+    visualize_classification_2d(x_test_norm, y_test.flatten(), model, path=join(config["output"], "test.png"),
+                                hint="Test subset", feature_names=feature_names)
 
 
 if __name__ == "__main__":
