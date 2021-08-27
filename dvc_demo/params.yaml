@@ -1,0 +1,6 @@
+preprocessing:
+  data: data/raw_data.csv
+  output: data
+  test_share: 0.2
+  random_state: 42
+

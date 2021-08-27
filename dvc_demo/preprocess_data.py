@@ -7,24 +7,27 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.feature_selection import SelectKBest, f_classif
 
+from utils import read_yaml
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Data preprocessing script")
-    parser.add_argument("--data", type=str, default="data/raw_data.csv",
-                        help="Absolute path to the source dataset")
-    parser.add_argument("--output", type=str, default="data")
-    parser.add_argument("--test_share", type=float, default=0.2,
-                        help="Test subset ratio")
-    parser.add_argument("--random_state", type=int, default=42,
-                        help="Random state")
+    parser.add_argument("--config", type=str, default="params.yaml",
+                        help="Absolute path to the configuration file (params.yaml)")
     return parser.parse_args()
 
 
 def preprocess_data(args):
-    if not isdir(args.output):
-        makedirs(args.output)
+    config = read_yaml(args.config)["preprocessing"]
+    output = config["output"]
+    data = config["data"]
+    test_share = config["test_share"]
+    random_state = config["random_state"]
 
-    df = pd.read_csv(args.data, index_col=False)
+    if not isdir(output):
+        makedirs(output)
+
+    df = pd.read_csv(data, index_col=False)
     features = df.loc[:, df.columns != "label"].to_numpy()
     labels = df.loc[:, df.columns == "label"].to_numpy()
 
@@ -36,13 +39,13 @@ def preprocess_data(args):
 
     best_features = df[best_features_labels].to_numpy()
     x_train, x_test, y_train, y_test = train_test_split(
-        best_features, labels, test_size=args.test_share, random_state=args.random_state
+        best_features, labels, test_size=test_share, random_state=random_state
     )
 
     train_df = pd.DataFrame(data=np.hstack([x_train, y_train]), columns=best_features_labels + ["label"])
-    train_df.to_csv(join(args.output, "train.csv"), index=False)
+    train_df.to_csv(join(output, "train.csv"), index=False)
     test_df = pd.DataFrame(data=np.hstack([x_test, y_test]), columns=best_features_labels + ["label"])
-    test_df.to_csv(join(args.output, "test.csv"), index=False)
+    test_df.to_csv(join(output, "test.csv"), index=False)
 
 
 if __name__ == "__main__":
