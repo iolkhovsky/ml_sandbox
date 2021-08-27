@@ -1,6 +1,6 @@
 
-# Created by https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,pycharm,venv,virtualenv
-# Edit at https://www.toptal.com/developers/gitignore?templates=python,jupyternotebooks,pycharm,venv,virtualenv
+# Created by https://www.toptal.com/developers/gitignore/api/pycharm,python,jupyternotebooks,venv,virtualenv
+# Edit at https://www.toptal.com/developers/gitignore?templates=pycharm,python,jupyternotebooks,venv,virtualenv
 
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
@@ -26,6 +26,9 @@ ipython_config.py
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
+
+# AWS User-specific
+.idea/**/aws.xml
 
 # Generated files
 .idea/**/contentModel.xml
@@ -142,7 +145,6 @@ parts/
 sdist/
 var/
 wheels/
-pip-wheel-metadata/
 share/python-wheels/
 *.egg-info/
 .installed.cfg
@@ -172,7 +174,7 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
-pytestdebug.log
+cover/
 
 # Translations
 *.mo
@@ -193,9 +195,9 @@ instance/
 
 # Sphinx documentation
 docs/_build/
-doc/_build/
 
 # PyBuilder
+.pybuilder/
 target/
 
 # Jupyter Notebook
@@ -203,7 +205,9 @@ target/
 # IPython
 
 # pyenv
-.python-version
+#   For a library or package, you might want to ignore these files since the code is
+#   intended to run in multiple environments; otherwise, check them in:
+# .python-version
 
 # pipenv
 #   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
@@ -230,7 +234,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-pythonenv*
 
 # Spyder project settings
 .spyderproject
@@ -253,8 +256,8 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
-# profiling data
-.prof
+# Cython debug symbols
+cython_debug/
 
 ### venv ###
 # Virtualenv
@@ -272,5 +275,5 @@ pip-selfcheck.json
 # Virtualenv
 # http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
 
-# End of https://www.toptal.com/developers/gitignore/api/python,jupyternotebooks,pycharm,venv,virtualenv
+# End of https://www.toptal.com/developers/gitignore/api/pycharm,python,jupyternotebooks,venv,virtualenv
 
