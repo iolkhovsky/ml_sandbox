@@ -24,7 +24,9 @@ stages:
     - trained_model/model.pickle
     - trained_model/preprocessor.pickle
     - trained_model/train.png
-    - trained_model/train_report.yml
+    metrics:
+      - trained_model/train_report.yml:
+          cache: false
   testing:
     cmd: python3 test.py
     deps:
@@ -36,4 +38,6 @@ stages:
     - testing.model
     outs:
     - test_results/test.png
-    - test_results/test_report.yml
+    metrics:
+      - test_results/test_report.yml:
+          cache: false
