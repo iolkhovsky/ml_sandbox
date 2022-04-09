@@ -26,5 +26,5 @@ def run_model(model, x, y, test_size=0.33, random_state=42):
     print(f"Prediction time: {prediction_time}")
     print(f"Quality. Accuracy: {accuracy}, Precision: {precision}, Recall {recall}, F1: {f1}")
 
-    visualize_classification_2d(x_train, y_train, model, hint="Train subset")
-    visualize_classification_2d(x_test, y_test, model, hint="Test subset")
+    visualize_classification_2d(x_train, y_train, model=model, hint="Train subset")
+    visualize_classification_2d(x_test, y_test, model=model, hint="Test subset")
