@@ -1,6 +1,14 @@
 import numpy as np
 
 
+def generate_correlated_data():
+    rng = np.random.RandomState(0)
+    n_samples = 500
+    cov = [[3, 4], [3, 3]]
+    X = rng.multivariate_normal(mean=[0, 0], cov=cov, size=n_samples)
+    return X
+
+
 def standardize_vector(x, scale=True):
     assert isinstance(x, np.ndarray) and len(x.shape) == 1
     centered = x - np.mean(x, axis=0)
