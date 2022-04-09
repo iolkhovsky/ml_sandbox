@@ -3,8 +3,8 @@ import numpy as np
 import seaborn as sns
 from matplotlib.colors import ListedColormap
 
-CMAP_LIGHT = ListedColormap(['lightyellow', 'cyan'])
-CMAP_BOLD = ['orange', 'darkblue']
+CMAP_LIGHT = ListedColormap(['lightyellow', 'cyan', 'lightsalmon', 'palegreen'])
+CMAP_BOLD = ['orange', 'darkblue', 'darkred', 'green']
 
 
 def visualize_classification_2d(x, y, grid_step=0.005, model=None, labels_dict=None, feature_names=None, hint=""):
@@ -12,6 +12,7 @@ def visualize_classification_2d(x, y, grid_step=0.005, model=None, labels_dict=N
         feature_names = ["feature_#0", "feature_#1"]
     if labels_dict is None:
         labels_dict = {x: f"label_{x}" for x in set(y)}
+    classes_cnt = len(set(y))
 
     x_min, x_max = x[:, 0].min() - 1, x[:, 0].max() + 1
     y_min, y_max = x[:, 1].min() - 1, x[:, 1].max() + 1
@@ -24,11 +25,10 @@ def visualize_classification_2d(x, y, grid_step=0.005, model=None, labels_dict=N
     if model is not None:
         z = model.predict(np.c_[xx.ravel(), yy.ravel()])
         z = z.reshape(xx.shape)
-    
-    plt.contourf(xx, yy, z, cmap=CMAP_LIGHT)
+        plt.contourf(xx, yy, z, cmap=CMAP_LIGHT[:classes_cnt])
 
     sns.scatterplot(x=x[:, 0], y=x[:, 1], hue=[labels_dict[label] for label in y],
-                    palette=CMAP_BOLD, alpha=1.0, edgecolor="black")
+                    palette=CMAP_BOLD[:classes_cnt], alpha=1.0, edgecolor="black")
     plt.xlim(xx.min(), xx.max())
     plt.ylim(yy.min(), yy.max())
 
