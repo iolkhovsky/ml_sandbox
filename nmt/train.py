@@ -3,6 +3,7 @@ import datetime
 import itertools
 from math import ceil
 import os
+from time import time
 import torch
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
@@ -23,7 +24,7 @@ def parse_cmd_args():
 def train(
         device, model, optimizer, train_dataloader, en_tokenizer, ru_tokenizer,
         val_dataloader=None, epochs=0, iterations=100, logs_path='logs',
-        checkpoints_path='checkpoints', val_steps=50,
+        checkpoints_path='checkpoints', val_steps=50, autosave_secs=None,
 ):
     model.to(device)
 
@@ -44,6 +45,14 @@ def train(
         session_timestamp,
     )
     os.makedirs(logs_path)
+    autosave_tstamp = None
+    if autosave_secs is not None:
+        checkpoints_path = os.path.join(
+            checkpoints_path,
+            session_timestamp,
+        )
+        os.makedirs(checkpoints_path)
+        autosave_tstamp = time()   
 
     writer = SummaryWriter(log_dir=logs_path)
 
@@ -106,6 +115,12 @@ def train(
                 pbar.update(1)
                 step += 1
 
+                if autosave_tstamp is not None:
+                    if time() > autosave_tstamp + autosave_secs:
+                        autosave_tstamp = time()
+                        model_path = os.path.join(checkpoints_path, f"translator_ep_{epoch}_step_{step}")
+                        model.save(model_path)
+
                 if step >= total_steps:
                     break
             if step >= total_steps:
@@ -143,6 +158,7 @@ def run(args):
         logs_path=training_config['logs'],
         checkpoints_path=training_config['checkpoints'],
         val_steps=training_config['validation_steps'],
+        autosave_secs=training_config['autosave_mins'] * 60.,
     )
 
 

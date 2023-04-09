@@ -1,9 +1,10 @@
 device: cpu
 epochs: 0
-iterations: 100
+iterations: 2000
 logs: logs
 checkpoints: checkpoints
 validation_steps: 50
+autosave_mins: 1
 model:
   class: BasicLstmTranslator
   parameters:

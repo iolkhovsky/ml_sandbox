@@ -49,3 +49,13 @@ class BasicLstmTranslator(nn.Module):
                 res.append(pred_token)
                 
             return res
+
+    def save(self, path):
+        torch.save(self.state_dict(), path)
+
+    @staticmethod
+    def load(path, max_length=10, start_token=SpecToken.START, stop_token=SpecToken.STOP, device='cpu'):
+        model = BasicLstmTranslator(max_length=10, start_token=SpecToken.START, stop_token=SpecToken.STOP)
+        model.load_state_dict(torch.load(path, map_location=device))
+        model.eval()
+        return model
