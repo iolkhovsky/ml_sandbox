@@ -8,7 +8,7 @@ from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
 from utils import read_yaml, get_available_device
-from models import build_model
+from models import build_model, infer
 from datasets import build_dataloaders
 
 
@@ -66,36 +66,44 @@ def train(
                 
                 loss.backward()
                 optimizer.step()
-                
-                if val_steps and (step % val_steps == 0) and (val_iter is not None):
-                    val_batch = next(val_iter)
-                    in_tokens = torch.Tensor(val_batch['encoder_input']).long().to(device)
-                    dec_targets = torch.Tensor(val_batch['decoder_output']).long().to(device)
 
-                    in_tokens = in_tokens[0].unsqueeze(0)
-                    dec_targets = dec_targets[0].unsqueeze(0)
-
-                    model.eval()
-                    pred = model(in_tokens)
-
-                    if in_tokens.device != torch.device('cpu'):
-                        in_tokens = in_tokens.cpu()
-                        dec_targets = dec_targets.cpu()
-                        pred = [x.cpu() for x in pred]
-                    
-                    input_sample = en_tokenizer.decode_line(in_tokens[0])
-                    target_sample = ru_tokenizer.decode_line(dec_targets[0])
-                    predicted_sample = ru_tokenizer.decode_line(pred)
-                    writer.add_text('Validation/Input', input_sample, global_step=step)
-                    writer.add_text('Validation/Target', target_sample, global_step=step)
-                    writer.add_text('Validation/Prediction', predicted_sample, global_step=step)
-                
-                pbar.update(1)
                 if device != torch.device('cpu'):
                     loss = loss.cpu()
                 loss = loss.detach().item()
                 pbar.set_description(f'Step: {step} Epoch: {epoch} Loss: {loss}')
                 writer.add_scalar('Loss/Train', loss, step)
+                
+                if val_steps and (step % val_steps == 0) and (val_iter is not None):
+                    val_batch = next(val_iter)
+                    in_tokens = torch.Tensor(val_batch['encoder_input']).long().to(device)
+                    dec_targets = torch.Tensor(val_batch['decoder_output']).long()
+
+                    inputs, outputs = infer(model, in_tokens, en_tokenizer, ru_tokenizer)
+                    target_outputs = [ru_tokenizer.decode_line(x) for x in dec_targets]
+
+                    validation_examples = ""
+                    for idx, (input_sen, output_sen, target_sen) in enumerate(zip(inputs, outputs, target_outputs)):
+                        validation_examples += f'Sample # {idx}\n'
+                        validation_examples += f'Input: {input_sen}\n'
+                        validation_examples += f'Target: {output_sen}\n'
+                        validation_examples += f'Predicted: {target_sen}\n\n'
+
+                    writer.add_text('Validation/Samples', validation_examples, global_step=step)
+
+                    dec_targets = dec_targets.to(device)
+                    dec_inputs = torch.Tensor(val_batch['decoder_input']).long()
+                    model.train()
+                    val_loss = model(
+                        tokens=in_tokens,
+                        dec_input=dec_inputs,
+                        dec_target=dec_targets,
+                    )
+                    if device != torch.device('cpu'):
+                        val_loss = val_loss.cpu()
+                    val_loss = val_loss.detach().item()
+                    writer.add_scalar('Loss/Val', val_loss, step)
+                
+                pbar.update(1)
                 step += 1
 
                 if step >= total_steps:
