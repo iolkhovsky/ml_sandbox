@@ -1,9 +1,11 @@
 import argparse
+import datetime
 import itertools
 from math import ceil
 import os
 import torch
 from tqdm import tqdm
+from torch.utils.tensorboard import SummaryWriter
 
 from utils import read_yaml, get_available_device
 from models import build_model
@@ -34,6 +36,16 @@ def train(
     val_iter = None
     if val_dataloader is not None:
         val_iter = itertools.cycle(iter(val_dataloader))
+
+    session_timestamp = str(datetime.datetime.now())
+    session_timestamp = session_timestamp.replace(" ", "").replace(":", "-").replace(".", "-")
+    logs_path = os.path.join(
+        logs_path,
+        session_timestamp,
+    )
+    os.makedirs(logs_path)
+
+    writer = SummaryWriter(log_dir=logs_path)
 
     step = 0
     with tqdm(total=total_steps) as pbar:
@@ -66,19 +78,24 @@ def train(
                     model.eval()
                     pred = model(in_tokens)
 
-                    print('\n\nEvaluation')
                     if in_tokens.device != torch.device('cpu'):
                         in_tokens = in_tokens.cpu()
                         dec_targets = dec_targets.cpu()
                         pred = [x.cpu() for x in pred]
-                    print(f'Input sequence:\n{en_tokenizer.decode_line(in_tokens[0])}')
-                    print(f'Target sequence:\n{ru_tokenizer.decode_line(dec_targets[0])}')
-                    print(f'Predicted sequence:\n{ru_tokenizer.decode_line(pred)}')
+                    
+                    input_sample = en_tokenizer.decode_line(in_tokens[0])
+                    target_sample = ru_tokenizer.decode_line(dec_targets[0])
+                    predicted_sample = ru_tokenizer.decode_line(pred)
+                    writer.add_text('Validation/Input', input_sample, global_step=step)
+                    writer.add_text('Validation/Target', target_sample, global_step=step)
+                    writer.add_text('Validation/Prediction', predicted_sample, global_step=step)
                 
                 pbar.update(1)
                 if device != torch.device('cpu'):
                     loss = loss.cpu()
-                pbar.set_description(f'Step: {step}\tEpoch: {epoch}\tLoss: {loss.detach()}')
+                loss = loss.detach().item()
+                pbar.set_description(f'Step: {step} Epoch: {epoch} Loss: {loss}')
+                writer.add_scalar('Loss/Train', loss, step)
                 step += 1
 
                 if step >= total_steps:

@@ -19,4 +19,4 @@ dataset:
   class: KaggleTranslationDataset
   parameters:
     path: nmt/data/kaggle_rus_dict/rus.txt
-    max_words: 10000
+    max_words: 10
