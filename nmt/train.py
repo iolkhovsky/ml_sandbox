@@ -92,10 +92,13 @@ def train(
 
                     validation_examples = ""
                     for idx, (input_sen, output_sen, target_sen) in enumerate(zip(inputs, outputs, target_outputs)):
+                        input_sen = input_sen.replace('PAD', '')
+                        target_sen = target_sen.replace('PAD', '')
+                        output_sen = output_sen.replace('PAD', '')
                         validation_examples += f'Sample # {idx}\n'
                         validation_examples += f'Input: {input_sen}\n'
-                        validation_examples += f'Target: {output_sen}\n'
-                        validation_examples += f'Predicted: {target_sen}\n\n'
+                        validation_examples += f'Target: {target_sen}\n'
+                        validation_examples += f'Predicted: {output_sen}\n\n'
 
                     writer.add_text('Validation/Samples', validation_examples, global_step=step)
 
