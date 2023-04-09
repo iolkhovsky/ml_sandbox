@@ -104,7 +104,7 @@ with tqdm(total=steps_to_train) as pbar:
                 if in_tokens.device != torch.device('cpu'):
                     in_tokens = in_tokens.cpu()
                     dec_targets = dec_targets.cpu()
-                    pred = pred.cpu()
+                    pred = [x.cpu() for x in pred]
                 print(f'Input sequence:\n{en_tokenizer.decode_line(in_tokens[0])}')
                 print(f'Target sequence:\n{ru_tokenizer.decode_line(dec_targets[0])}')
                 print(f'Predicted sequence:\n{ru_tokenizer.decode_line(pred)}')
