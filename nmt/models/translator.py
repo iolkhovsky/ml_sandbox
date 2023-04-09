@@ -1,13 +1,13 @@
 import torch
 import torch.nn as nn
 
-from model import Encoder, Decoder
-from dataset import SpecToken
+from models import Encoder, Decoder
+from datasets import SpecToken
 
 
-class Translator(nn.Module):
+class BasicLstmTranslator(nn.Module):
     def __init__(self, max_length=10, start_token=SpecToken.START, stop_token=SpecToken.STOP):
-        super(Translator, self).__init__()
+        super(BasicLstmTranslator, self).__init__()
         self._encoder = Encoder()
         self._decoder = Decoder()
         self._loss = nn.CrossEntropyLoss()

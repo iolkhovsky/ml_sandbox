@@ -1,115 +1,125 @@
+import argparse
+import itertools
+from math import ceil
 import os
-from itertools import cycle
 import torch
-from torch import optim
-from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-from dataset import Tokenizer, OpusTranslationDataset, KaggleTranslationDataset
-from model import Translator
-from utils import get_available_device
+from utils import read_yaml, get_available_device
+from models import build_model
+from datasets import build_dataloaders
 
 
-DATA_ROOT = 'nmt/data'
-# TRAIN_RU = os.path.join(DATA_ROOT, 'opus/train_ru.txt')
-# TRAIN_EN = os.path.join(DATA_ROOT, 'opus/train_en.txt')
-# VAL_RU = os.path.join(DATA_ROOT, 'opus/test_ru.txt')
-# VAL_EN = os.path.join(DATA_ROOT, 'opus/test_en.txt')
-PATH =  os.path.join(DATA_ROOT, 'kaggle_rus_dict/rus.txt')
-TRAIN_BATCH_SIZE = 32
-MAX_WORDS = 10
+def parse_cmd_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', default=os.path.join('nmt', 'config', 'train.yaml'),
+                        help='Path to training config')
+    args = parser.parse_args()
+    return args
 
-en_tokenizer = Tokenizer()
-ru_tokenizer = Tokenizer()
 
-dataset = KaggleTranslationDataset(
-    path=PATH,
-    en_tokenizer=en_tokenizer,
-    ru_tokenizer=ru_tokenizer,
-    fit_tokenizer=True,
-    max_words=MAX_WORDS,
-)
-dataloader = DataLoader(dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
-print(f'Dataset size: {len(dataset)}')
+def train(
+        device, model, optimizer, train_dataloader, en_tokenizer, ru_tokenizer,
+        val_dataloader=None, epochs=0, iterations=100, logs_path='logs',
+        checkpoints_path='checkpoints', val_steps=50,
+):
+    model.to(device)
 
-# print('Loading training dataset...')
-# train_dataset = OpusTranslationDataset(
-#     en_data_path=TRAIN_EN,
-#     ru_data_path=TRAIN_RU,
-#     en_tokenizer=en_tokenizer,
-#     ru_tokenizer=ru_tokenizer,
-#     fit_tokenizer=True,
-#     max_words=40
-# )
-# train_dataloader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
-# print(f'Training dataset size: {len(train_dataset)}')
+    total_steps = iterations
+    if epochs:
+        total_steps = len(train_dataloader) * epochs
+    else:
+        epochs = ceil(iterations / len(train_dataloader))
+    
+    val_iter = None
+    if val_dataloader is not None:
+        val_iter = itertools.cycle(iter(val_dataloader))
 
-# print('Loading validation dataset...')
-# val_dataset = OpusTranslationDataset(
-#     en_data_path=VAL_EN,
-#     ru_data_path=VAL_RU,
-#     en_tokenizer=en_tokenizer,
-#     ru_tokenizer=ru_tokenizer,
-#     max_words=40
-# )
-# val_dataloader = DataLoader(train_dataset, batch_size=TRAIN_BATCH_SIZE, shuffle=True)
-# print(f'Validation dataset size: {len(val_dataset)}')
+    step = 0
+    with tqdm(total=total_steps) as pbar:
+        for epoch in range(epochs):
+            for train_batch in train_dataloader:
+                model.train()
+                optimizer.zero_grad()
 
-device = 'cpu' # device = get_available_device()
-model = Translator(max_length=MAX_WORDS)
-model.to(device)
+                in_tokens = torch.Tensor(train_batch['encoder_input']).long().to(device)
+                dec_inputs = torch.Tensor(train_batch['decoder_input']).long().to(device)
+                dec_targets = torch.Tensor(train_batch['decoder_output']).long().to(device)
 
-# train_iter = iter(train_dataloader)
-# val_iter = iter(val_dataloader)
-train_iter = cycle(iter(dataloader))
-optimizer = optim.RMSprop(model.parameters(), lr=0.01)
-# optimizer = optim.SGD(model.parameters(), lr=1e-2)
+                loss = model(
+                    tokens=in_tokens,
+                    dec_input=dec_inputs,
+                    dec_target=dec_targets,
+                )
+                
+                loss.backward()
+                optimizer.step()
+                
+                if val_steps and (step % val_steps == 0) and (val_iter is not None):
+                    val_batch = next(val_iter)
+                    in_tokens = torch.Tensor(val_batch['encoder_input']).long().to(device)
+                    dec_targets = torch.Tensor(val_batch['decoder_output']).long().to(device)
 
-steps_to_train = 10000
+                    in_tokens = in_tokens[0].unsqueeze(0)
+                    dec_targets = dec_targets[0].unsqueeze(0)
 
-print('Running training loop...')
-with tqdm(total=steps_to_train) as pbar:
-    for step in range(steps_to_train):
-        # try:
-        if True:
-            model.train()
-            optimizer.zero_grad()
-            
-            sample = next(train_iter)
-            in_tokens = torch.Tensor(sample['encoder_input']).long().to(device)
-            dec_inputs = torch.Tensor(sample['decoder_input']).long().to(device)
-            dec_targets = torch.Tensor(sample['decoder_output']).long().to(device)
+                    model.eval()
+                    pred = model(in_tokens)
 
-            loss = model(
-                tokens=in_tokens,
-                dec_input=dec_inputs,
-                dec_target=dec_targets,
-            )
-            
-            loss.backward()
-            optimizer.step()
-            
-            if step % 50 == 0:
-                val_sample = next(train_iter)
-                in_tokens = torch.Tensor(val_sample['encoder_input']).long().to(device)
-                dec_targets = torch.Tensor(val_sample['decoder_output']).long().to(device)
+                    print('\n\nEvaluation')
+                    if in_tokens.device != torch.device('cpu'):
+                        in_tokens = in_tokens.cpu()
+                        dec_targets = dec_targets.cpu()
+                        pred = [x.cpu() for x in pred]
+                    print(f'Input sequence:\n{en_tokenizer.decode_line(in_tokens[0])}')
+                    print(f'Target sequence:\n{ru_tokenizer.decode_line(dec_targets[0])}')
+                    print(f'Predicted sequence:\n{ru_tokenizer.decode_line(pred)}')
+                
+                pbar.update(1)
+                if device != torch.device('cpu'):
+                    loss = loss.cpu()
+                pbar.set_description(f'Step: {step}\tEpoch: {epoch}\tLoss: {loss.detach()}')
+                step += 1
 
-                in_tokens = in_tokens[0].unsqueeze(0)
-                dec_targets = dec_targets[0].unsqueeze(0)
+                if step >= total_steps:
+                    break
+            if step >= total_steps:
+                break
+    print('Completed')
 
-                model.eval()
-                pred = model(in_tokens)
 
-                print('\n\nEvaluation')
-                if in_tokens.device != torch.device('cpu'):
-                    in_tokens = in_tokens.cpu()
-                    dec_targets = dec_targets.cpu()
-                    pred = [x.cpu() for x in pred]
-                print(f'Input sequence:\n{en_tokenizer.decode_line(in_tokens[0])}')
-                print(f'Target sequence:\n{ru_tokenizer.decode_line(dec_targets[0])}')
-                print(f'Predicted sequence:\n{ru_tokenizer.decode_line(pred)}')
+def run(args):
+    training_config = read_yaml(args.config)
 
-            pbar.set_description(f'Step {step} Loss: {loss.detach()}')
-        # except Exception as e:
-        #     print(f'Got exception: {e}')
-        pbar.update(1)
+    device = training_config['device']
+    if device == 'auto':
+        device = get_available_device()
+    device = torch.device(device)
+
+    model, optimizer = build_model(
+        training_config['model'],
+        training_config['optimizer'],
+    )
+    print(model)
+
+    train_dataloader, val_dataloader, en_tokenizer, ru_tokenizer = \
+        build_dataloaders(training_config['dataset'])
+
+    train(
+        device=device,
+        model=model,
+        optimizer=optimizer,
+        train_dataloader=train_dataloader,
+        en_tokenizer=en_tokenizer,
+        ru_tokenizer=ru_tokenizer,
+        val_dataloader=val_dataloader,
+        epochs=training_config['epochs'],
+        iterations=training_config['iterations'],
+        logs_path=training_config['logs'],
+        checkpoints_path=training_config['checkpoints'],
+        val_steps=training_config['validation_steps'],
+    )
+
+
+if __name__ == '__main__':
+    run(parse_cmd_args())

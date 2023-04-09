@@ -1,0 +1,22 @@
+device: cpu
+epochs: 0
+iterations: 100
+logs: logs
+checkpoints: checkpoints
+validation_steps: 50
+model:
+  class: BasicLstmTranslator
+  parameters:
+    max_length: 10
+optimizer:
+  type: RMSprop
+  parameters:
+    lr: 0.001
+dataset:
+  val_share: 0.1
+  train_batch: 32
+  val_batch: 16
+  class: KaggleTranslationDataset
+  parameters:
+    path: nmt/data/kaggle_rus_dict/rus.txt
+    max_words: 10000
