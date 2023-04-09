@@ -103,7 +103,7 @@ def train(
                     writer.add_text('Validation/Samples', validation_examples, global_step=step)
 
                     dec_targets = dec_targets.to(device)
-                    dec_inputs = torch.Tensor(val_batch['decoder_input']).long()
+                    dec_inputs = torch.Tensor(val_batch['decoder_input']).long().to(device)
                     model.train()
                     val_loss = model(
                         tokens=in_tokens,
